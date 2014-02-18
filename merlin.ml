@@ -98,6 +98,23 @@ let errors ~state =
     | `Assoc l as data -> string_of_json (List.assoc "message" l), range_of_json data
     | _ -> assert false) e
   | _ -> assert false)
+
+type completion_entry = {
+  kind : string;
+  descr : string;
+  name: string;
+}
+
+let complete ~state ident position = 
+  send_command_map ~state "complete" [`String "prefix"; `String ident; `String "at"; json_of_pos position] (function
+  | `List e ->
+    List.map (function
+    | `Assoc l as data -> 
+      { kind = string_of_json (List.assoc "kind" l);
+        name = string_of_json (List.assoc "name" l);
+        descr = string_of_json (List.assoc "descr" l) }
+    | _ -> assert false) e
+  | _ -> assert false)
 let type_expression ~state string pos = 
   send_command_map ~state "type" 
     [`String "expression"; `String string; `String "at"; json_of_pos pos]
