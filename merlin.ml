@@ -96,7 +96,7 @@ let errors ~state =
   | `List e ->
     List.map (function
     | `Assoc l as data -> string_of_json (List.assoc "message" l), range_of_json data
-    | _ -> assert false)
+    | _ -> assert false) e
   | _ -> assert false)
 let type_expression ~state string pos = 
   send_command_map ~state "type" 
