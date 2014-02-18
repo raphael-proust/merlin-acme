@@ -1,5 +1,5 @@
 
-(*let env k = Sys.getenv k
+let env k = Sys.getenv k
 
 (* Global env *)
 let ns = env "NAMESPACE"
@@ -106,7 +106,7 @@ let get_content () =
 	O9pc.clunk conn fid;
 (*	Printf.printf "%s\n%!" (Buffer.contents b); *)
 	Buffer.contents b
-        *)
+
 let from_offset code offset = 
   let line = ref 1 and column = ref 0 in
   (try

@@ -4,14 +4,19 @@ let () = match Merlin.reset ~state (Lib.gfile ()) with
 	| None -> exit 2
 	| Some () -> ()
 
-let () = match Merlin.tell_string ~state (Lib.get_content ()) with
+let content = Lib.get_content ()
+
+let () = match Merlin.tell_string ~state content with
 	| None -> exit 2
 	| Some _ -> ()
 
 let () =
 	let wid = Lib.new_window () in
 	let fname = Lib.gfile () in
-	let position = (4, 13) (*TODO: get the dot position!*) in
+	let a = Addr.addr (Printf.sprintf "%d" (Lib.gwid ())) in
+	Printf.printf "%d\n%!" a;
+	let (x,y) as position = Lib.from_offset content a in
+	Printf.printf "%d\t%d\n%!" x y;
 	let types = Merlin.type_enclosing ~state ("", 0) position in
 	match types with
 	| None -> ()
@@ -27,4 +32,3 @@ let () =
 			l;
 		Lib.ctl wid Lib.Clean;
 		Lib.ctl wid Lib.Show
-
