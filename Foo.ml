@@ -47,7 +47,56 @@ let put winid s = O9pc.(
 	let (_:int32) = write conn win_fid win_iounit 0L (Int32.of_int (String.length s)) s in
 	clunk conn win_fid
 )
+
+type addr (*TODO*)
+type command (*???*)
+type dirname = string
+
+type ctl_msg =
+	| AddrEqDot
+	| Clean
+	| Dirty
+	| Cleartag
+	| Del
+	| Delete
+	| DotEqAddr of addr
+	| Dump of command
+	| Dumpdir of dirname
+	| Get
+	| Limit of addr
+	| Mark
+	| Name of string
+	| Nomark
+	| Put
+	| Show
+
+let string_of_ctl_msg = function
+	| AddrEqDot -> "addr=dot"
+	| Clean -> "clean"
+	| Dirty -> "dirty"
+	| Cleartag -> "cleartag"
+	| Del -> "del"
+	| Delete -> "delete"
+	| DotEqAddr addr -> failwith "TODO"
+	| Dump cmd -> failwith "TODO"
+	| Dumpdir dirname -> "dumpdir " ^ dirname
+	| Get -> "get"
+	| Limit addr -> failwith "TODO"
+	| Mark -> "mark"
+	| Name name -> "name " ^ name
+	| Nomark -> "nomark"
+	| Put -> "put"
+	| Show -> "show"
+
+let ctl winid ctlmsg = O9pc.(
+	let root = attach conn user "" in
+	let win_fid = walk conn root false (Printf.sprintf "%s/ctl" winid) in
+	let win_iounit = fopen conn win_fid oWRITE in
+	let s = string_of_ctl_msg ctlmsg in
+	let (_:int32) = write conn win_fid win_iounit 0L (Int32.of_int (String.length s)) s in
+	clunk conn win_fid
+)
+
 let win_name = new_window ()
-
 let () = put win_name "foo\nsplash"
-
+let () = ctl win_name Clean
