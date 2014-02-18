@@ -1,5 +1,5 @@
 
-TRGTS=Cplt.merlin TypeOf.merlin
+TRGTS=Cplt.merlin TypeOf.merlin Locate.merlin Errors.merlin
 LIBS=fcall.cmo o9pc.cmo Lib.cmo merlin.cmo
 
 all:V: $TRGTS

@@ -1,2 +1,4 @@
 PKG yojson
 PKG batteries
+S .
+B .
