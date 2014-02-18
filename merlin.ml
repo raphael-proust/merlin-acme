@@ -112,7 +112,7 @@ let complete ~state ident position =
     | `Assoc l as data -> 
       { kind = string_of_json (List.assoc "kind" l);
         name = string_of_json (List.assoc "name" l);
-        descr = string_of_json (List.assoc "descr" l) }
+        descr = string_of_json (List.assoc "desc" l) }
     | _ -> assert false) e
   | _ -> assert false)
 let type_expression ~state string pos = 
