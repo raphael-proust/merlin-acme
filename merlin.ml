@@ -81,7 +81,7 @@ let type_enclosing ~state (string, offset) pos =
      json_of_pos pos]
     (function `List l ->
       List.map (function 
-      | `Assoc l as data -> (List.assoc "type" l, range_of_json data)
+      | `Assoc l as data -> (string_of_json (List.assoc "type" l), range_of_json data)
       | _ -> assert false) l
     | _ -> assert false)
 
