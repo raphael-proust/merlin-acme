@@ -85,6 +85,13 @@ let type_enclosing ~state (string, offset) pos =
       | _ -> assert false) l
     | _ -> assert false)
 
+let locate ~state identifier position = 
+  send_command_map ~state "locate" [`String identifier; `String "at"; json_of_pos position] 
+    (function
+    | `Assoc l as data -> (List.assoc "file" l, pos_of_json (List.assoc "pos"))
+    | _ -> assert false)
+
+
 let type_expression ~state string pos = 
   send_command_map ~state "type" 
     [`String "expression"; `String string; `String "at"; json_of_pos pos]
