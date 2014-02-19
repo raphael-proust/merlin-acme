@@ -13,10 +13,8 @@ let () = match Merlin.tell_string ~state content with
 let () =
 	let wid = Lib.new_window () in
 	let fname = Lib.gfile () in
-	let a = Addr.addr (Printf.sprintf "%d" (Lib.gwid ())) in
-	Printf.printf "%d\n%!" a;
+	let a = Lib.get_addr (Lib.gwid ()) in
 	let (x,y) as position = Lib.from_offset content a in
-	Printf.printf "%d\t%d\n%!" x y;
 	let types = Merlin.type_enclosing ~state ("", 0) position in
 	match types with
 	| None -> ()
