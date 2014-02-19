@@ -132,7 +132,7 @@ let to_offset code (line, column) =
 
 let bounds_ident code offset = 
   let is_ident_char = function
-    | 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '\'' | '_' -> true
+    | 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '\'' | '_' | '.' -> true
     | _ -> false
   in
   if not (is_ident_char code.[offset]) then (offset, offset)
