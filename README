@@ -1,3 +1,10 @@
-% Experiments with acme(4)
+# Experiments with acme(4)
 
-Trying out a few things with acme's 9p interface.
+Integrating Merlin with acme via the 9p interface.
+
+Work in progress:
+
+- LICENSE to come soon
+- hacks to be remove sometime
+- packaging and polishing to come later yet
+- &c.
