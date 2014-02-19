@@ -1,5 +1,5 @@
 
-let env k = Sys.getenv k
+(*let env k = Sys.getenv k
 
 (* Global env *)
 let ns = env "NAMESPACE"
@@ -106,3 +106,45 @@ let get_content () =
 	O9pc.clunk conn fid;
 (*	Printf.printf "%s\n%!" (Buffer.contents b); *)
 	Buffer.contents b
+        *)
+let from_offset code offset = 
+  let line = ref 1 and column = ref 0 in
+  (try
+    String.iteri (fun index c ->
+      if c = '\n' then (column := 0; incr line)
+      else (incr column);
+      if index = offset then assert false) code;
+  with _ -> ());
+  (!line, !column)
+
+let to_offset code (line, column) = 
+  let ret = ref 0 in
+  let rline = ref 1 and rcolumn = ref 0 in
+  (try
+    String.iteri (fun index c ->
+      if c = '\n' then (incr rline; rcolumn := 0)
+      else 
+        (incr rcolumn;
+         if !rcolumn = column && !rline = line then
+           (ret := index; assert false))) code
+  with _ -> ());
+  !ret
+
+let bounds_ident code offset = 
+  let is_ident_char = function
+    | 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '\'' | '_' -> true
+    | _ -> false
+  in
+  if not (is_ident_char code.[offset]) then (offset, offset)
+  else
+    let beginning = ref offset and stop = ref offset in
+    while !beginning >= 0 && is_ident_char (code.[!beginning]) do decr beginning done;
+    while !stop < String.length code && is_ident_char (code.[!stop]) do incr stop done;
+    incr beginning;
+    decr stop;
+    (!beginning, !stop)
+
+  
+let ident_under_point code offset = 
+  let (start, stop) = bounds_ident code offset in
+  String.sub code start (stop - start+1)
