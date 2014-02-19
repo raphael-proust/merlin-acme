@@ -1,5 +1,5 @@
 
-let state = Merlin.start "/home/bnwr/.opam/system/bin/ocamlmerlin" []
+let state = Merlin.start "ocamlmerlin" []
 
 let () = match Merlin.load_project ~state (Lib.gfile ()) with
 	| None -> exit 2
@@ -22,5 +22,6 @@ let () =
 		| None -> ()
 		| Some (fname, (c, l)) ->
 			Lib.put wid (Printf.sprintf "%s:%d:%d\n" fname c l);
-			Lib.ctl wid Lib.Clean
+			Lib.ctl wid Lib.Clean;
+			Lib.ctl wid Lib.Show
 

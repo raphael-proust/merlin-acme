@@ -1,5 +1,5 @@
 
-let state = Merlin.start "/home/bnwr/.opam/system/bin/ocamlmerlin" []
+let state = Merlin.start "ocamlmerlin" []
 let () = match Merlin.reset ~state (Lib.gfile ()) with
 	| None -> exit 2
 	| Some () -> ()
