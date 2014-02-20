@@ -1,43 +1,4 @@
 
-let env k = Sys.getenv k
-
-(* Global env *)
-let ns = env "NAMESPACE"
-let user = env "USER"
-
-(* window specific env *)
-let gwid () = env "winid"
-let gfile () = env "%"
-
-let get_conn () = O9pc.connect (Printf.sprintf "%s/acme" ns)
-
-let new_window () = O9pc.(
-	let conn = get_conn () in
-	let rootfid = attach conn user "" in
-	let root_iounit = fopen conn rootfid oREAD in
-	let data = read conn rootfid root_iounit 0L 4096l in
-	let files = List.map (fun x -> x.Fcall.name) (unpack_files data) in
-	clunk conn rootfid;
-	let rootfid = attach conn user "" in
-	let (_:int32) = fwrite conn rootfid "new/body" 0L 0l "" in
-	let root_iounit = fopen conn rootfid oREAD in
-	let data = read conn rootfid root_iounit 0L 4096l in
-	let newfiles = List.map (fun x -> x.Fcall.name) (unpack_files data) in
-	clunk conn rootfid;
-	let filename (*racy*) = List.find (fun f -> not (List.exists (fun ff -> f = ff) files)) newfiles in
-	filename
-)
-
-
-let put winid s = O9pc.(
-	let conn = get_conn () in
-	let root = attach conn user "" in
-	let win_fid = walk conn root false (Printf.sprintf "%s/body" winid) in
-	let win_iounit = fopen conn win_fid oWRITE in
-	let (_:int32) = write conn win_fid win_iounit 0L (Int32.of_int (String.length s)) s in
-	clunk conn win_fid
-)
-
 type addr (*TODO*) = string
 type command (*???*)
 type dirname = string
@@ -78,17 +39,91 @@ let string_of_ctl_msg = function
 	| Put -> "put"
 	| Show -> "show"
 
-let ctl winid ctlmsg = O9pc.(
-	let conn = get_conn () in
-	let root = attach conn user "" in
-	let win_fid = walk conn root false (Printf.sprintf "%s/ctl" winid) in
-	let win_iounit = fopen conn win_fid oWRITE in
-	let s = string_of_ctl_msg ctlmsg ^ "\n" in
-	let (_:int32) = write conn win_fid win_iounit 0L (Int32.of_int (String.length s)) s in
-	clunk conn win_fid
+let env k = Sys.getenv k
+
+(* Global env *)
+let ns = env "NAMESPACE"
+let user = env "USER"
+
+(* window specific env *)
+let gwid () = env "winid"
+let gfile () = env "%"
+
+let get_conn () = O9pc.connect (Printf.sprintf "%s/acme" ns)
+
+let get_fullio perm fname = O9pc.(
+	let conn = connect (Printf.sprintf "%s/acme" ns) in
+	let fid = attach conn user "" in
+	let fid = walk conn fid true fname in
+	let io = fopen conn fid perm in
+	(conn, fid, io)
+)
+let get_io conn perm fname = O9pc.(
+	let fid = attach conn user "" in
+	let fid = walk conn fid true fname in
+	let io = fopen conn fid perm in
+	(fid, io)
 )
 
-let destroy_window winid = ctl winid Delete
+let new_window () = O9pc.(
+	let (conn, fid, io) = get_fullio oREAD "" in
+	let data = read conn fid io 0L 4096l in
+	let files = List.map (fun x -> x.Fcall.name) (unpack_files data) in
+	clunk conn fid;
+	let (fid, io) = get_io conn oWRITE "new/body" in
+	let (_:int32) = write conn fid io 0L 0l "" in
+	clunk conn fid;
+	let (fid, io) = get_io conn oREAD "" in
+	let data = read conn fid io 0L 4096l in
+	let newfiles = List.map (fun x -> x.Fcall.name) (unpack_files data) in
+	clunk conn fid;
+	let filename (*racy*) = List.find (fun f -> not (List.exists (fun ff -> f = ff) files)) newfiles in
+	filename
+)
+
+let merlin_winid =
+	try
+		try
+			let i = open_in_gen [Open_rdonly] 0o600 (Printf.sprintf "%s/mwinid" ns) in
+			let s = input_line i in
+			close_in i;
+			(* test wether the file exists *)
+			let conn = O9pc.connect (Printf.sprintf "%s/acme" ns) in
+			let fid = O9pc.attach conn user "" in
+			let fid = O9pc.walk conn fid true s in
+			O9pc.clunk conn fid;
+			s
+		with e -> begin
+			Printf.eprintf "%s\n%!" (Printexc.to_string e);
+			let mw = new_window () in
+			let (ctlconn, ctlfid, ctlio) = get_fullio O9pc.oWRITE (Printf.sprintf "%s/ctl" mw) in
+			let (_:int32) = O9pc.write ctlconn ctlfid ctlio 0L 13l "name +Merlin\n" in
+			let o = open_out_gen [Open_wronly; Open_creat; Open_trunc] 0o600 (Printf.sprintf "%s/mwinid" ns) in
+			output_string o mw;
+			flush o;
+			close_out o;
+			mw
+		end
+	with e -> Printf.eprintf "%s\n%!" (Printexc.to_string e); raise e
+
+
+let erase_and_put ms =
+	let (addrconn, addrfid, addrio) = get_fullio O9pc.oWRITE (Printf.sprintf "%s/addr" merlin_winid) in
+	let (dataconn, datafid, dataio) = get_fullio O9pc.oWRITE (Printf.sprintf "%s/data" merlin_winid) in
+	let (ctlconn, ctlfid, ctlio) = get_fullio O9pc.oWRITE (Printf.sprintf "%s/ctl" merlin_winid) in
+	let (_:int32) = O9pc.write addrconn addrfid addrio 0L 1l "," in
+	let (_:int32) = O9pc.write dataconn datafid dataio 0L 0l "" in
+	List.iter (fun m ->
+			O9pc.write dataconn datafid dataio 0L (Int32.of_int (String.length m)) m
+			|> (ignore: int32 -> unit)
+		)
+		ms;
+	let (_:int32) = O9pc.write addrconn addrfid addrio 0L 1l "0" in
+	let (_:int32) = O9pc.write ctlconn ctlfid ctlio 0L 20l "clean\ndot=addr\nshow\n" in
+	O9pc.clunk addrconn addrfid;
+	O9pc.clunk dataconn datafid;
+	O9pc.clunk ctlconn ctlfid;
+	()
 
 let get_content () =
 	let conn = get_conn () in

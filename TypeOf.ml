@@ -11,7 +11,6 @@ let () = match LibMerlin.tell_string ~state content with
 	| Some _ -> ()
 
 let () =
-	let wid = LibAcme.new_window () in
 	let fname = LibAcme.gfile () in
 	let a = LibAcme.get_addr (LibAcme.gwid ()) in
 	let (x,y) as position = LibAcme.from_offset content a in
@@ -19,14 +18,11 @@ let () =
 	match types with
 	| None -> ()
 	| Some l ->
-		List.iter
-			(fun (t, ((sl, sc), (el, ec))) ->
+		LibAcme.erase_and_put
+			(List.map (fun (t, ((sl, sc), (el, ec))) ->
 				if el = sl then
-					LibAcme.put wid
-						(Printf.sprintf "%s:%d:%d-%d: %s\n" fname sl sc ec t )
+					Printf.sprintf "%s:%d:%d-%d: %s\n" fname sl sc ec t
 				else
-					() (*TODO: better plumbing rules*)
+					"" (*TODO*)
 			)
-			l;
-		LibAcme.ctl wid LibAcme.Clean;
-		LibAcme.ctl wid LibAcme.Show
+			l)

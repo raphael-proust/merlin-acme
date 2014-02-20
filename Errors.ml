@@ -17,15 +17,14 @@ let () =
 	let fname = LibAcme.gfile () in
 	let errs = LibMerlin.errors ~state in
 	match errs with
-		| None | Some [] -> ()
-		| Some (_::_ as l) ->
-			let wid = LibAcme.new_window () in
-			List.iter (fun (text, ((sc, sl), (ec, el))) ->
+	| None | Some [] -> ()
+	| Some (_::_ as l) ->
+		LibAcme.erase_and_put
+			(List.map (fun (text, ((sc, sl), (ec, el))) ->
 				if sc = ec then
-					LibAcme.put wid (Printf.sprintf "%s:%d:%d-%d: %s\n" fname sc sl el text)
+					Printf.sprintf "%s:%d:%d-%d: %s\n" fname sc sl el text
 				else
-					()
-				)
-				l;
-				LibAcme.ctl wid LibAcme.Clean;
-				LibAcme.ctl wid LibAcme.Show
+					"" (*TODO*)
+			)
+			l)
+
