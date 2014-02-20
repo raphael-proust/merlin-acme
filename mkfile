@@ -1,5 +1,5 @@
 
-TRGTS=M/Cplt M/TypeOf M/Locate M/Errors
+TRGTS=M/Cplt M/TypeOf M/Locate M/Errors M/Init
 LIBS=fcall.cmo o9pc.cmo LibAcme.cmo LibMerlin.cmo
 
 all:V: $TRGTS

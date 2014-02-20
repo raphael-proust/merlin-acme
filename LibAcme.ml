@@ -38,7 +38,7 @@ let put winid s = O9pc.(
 	clunk conn win_fid
 )
 
-type addr (*TODO*)
+type addr (*TODO*) = string
 type command (*???*)
 type dirname = string
 
@@ -49,7 +49,7 @@ type ctl_msg =
 	| Cleartag
 	| Del
 	| Delete
-	| DotEqAddr of addr
+	| DotEqAddr
 	| Dump of command
 	| Dumpdir of dirname
 	| Get
@@ -67,7 +67,7 @@ let string_of_ctl_msg = function
 	| Cleartag -> "cleartag"
 	| Del -> "del"
 	| Delete -> "delete"
-	| DotEqAddr addr -> failwith "TODO"
+	| DotEqAddr -> "dot=addr"
 	| Dump cmd -> failwith "TODO"
 	| Dumpdir dirname -> "dumpdir " ^ dirname
 	| Get -> "get"
