@@ -1,0 +1,5 @@
+Installation & usage:
+
+- copy the directory `M` somewhere in your `$PATH` (e.g. `$home/bin/M/`)
+- add `M/<tool>` in the tag of your window
+- middle-button click `M/<tool>`
