@@ -6,13 +6,13 @@ let ns = env "NAMESPACE"
 let user = env "USER"
 
 (* window specific env *)
-let gwid () = int_of_string (env "winid")
+let gwid () = env "winid"
 let gfile () = env "%"
 
-(* global connection to the fs interface *)
-let conn = O9pc.connect (Printf.sprintf "%s/acme" ns)
+let get_conn () = O9pc.connect (Printf.sprintf "%s/acme" ns)
 
 let new_window () = O9pc.(
+	let conn = get_conn () in
 	let rootfid = attach conn user "" in
 	let root_iounit = fopen conn rootfid oREAD in
 	let data = read conn rootfid root_iounit 0L 4096l in
@@ -30,6 +30,7 @@ let new_window () = O9pc.(
 
 
 let put winid s = O9pc.(
+	let conn = get_conn () in
 	let root = attach conn user "" in
 	let win_fid = walk conn root false (Printf.sprintf "%s/body" winid) in
 	let win_iounit = fopen conn win_fid oWRITE in
@@ -78,6 +79,7 @@ let string_of_ctl_msg = function
 	| Show -> "show"
 
 let ctl winid ctlmsg = O9pc.(
+	let conn = get_conn () in
 	let root = attach conn user "" in
 	let win_fid = walk conn root false (Printf.sprintf "%s/ctl" winid) in
 	let win_iounit = fopen conn win_fid oWRITE in
@@ -89,10 +91,11 @@ let ctl winid ctlmsg = O9pc.(
 let destroy_window winid = ctl winid Delete
 
 let get_content () =
+	let conn = get_conn () in
 	let wid = gwid () in
 	let b = Buffer.create 1024 in
 	let rootfid = O9pc.attach conn user "" in
-	let (fid, io) = O9pc.walk_open conn rootfid true (Printf.sprintf "%d/body" wid) O9pc.oREAD in
+	let (fid, io) = O9pc.walk_open conn rootfid true (Printf.sprintf "%s/body" wid) O9pc.oREAD in
 	let rec fill offset =
 		let r = O9pc.read conn fid io (Int64.of_int offset) 1024l in
 		if r = "" then
@@ -150,16 +153,27 @@ let ident_under_point code offset =
   String.sub code start (stop - start+1)
 
 (*TODO: unhack*)
-let get_addr winid =
-	let (ic, oc) = Unix.open_process (Printf.sprintf "9p rdwr acme/%d/addr" winid) in
-	let (_: string) = input_line ic in
-	let occtl = Unix.open_process_out (Printf.sprintf "9p write acme/%d/ctl" winid) in
-	let () = output_string occtl "addr=dot\n" in
-	let () = flush occtl in
-	let () = Unix.sleep 1 in
-	let () = output_string oc "\n" in
-	let () = flush oc in
-	let s = input_line ic in
-	let () = close_out occtl in
-	let () = close_out oc; close_in ic in
+let get_addr winid = O9pc.(
+	(* open addr *)
+	let conn_addr = get_conn () in
+	let root_addr = attach conn_addr user "" in
+	let addr_fid = walk conn_addr root_addr true (Printf.sprintf "%s/addr" winid) in
+	let addr_iounit = fopen conn_addr addr_fid oREAD in
+
+	(* open ctl *)
+	let conn_ctl = get_conn () in
+	let root_ctl = attach conn_ctl user "" in
+	let ctl_fid = walk conn_ctl root_ctl true (Printf.sprintf "%s/ctl" winid) in
+	let ctl_iounit = fopen conn_ctl ctl_fid oWRITE in
+
+	(* write to ctl and read from addr *)
+	let (_:int32) = write conn_ctl ctl_fid ctl_iounit 0L 9l "addr=dot\n" in
+	let s = read conn_addr addr_fid addr_iounit 0L 1024l in
+	
+	(* clean up *)
+	clunk conn_addr addr_fid;
+	clunk conn_ctl ctl_fid;
+	
+	(* scan *)
 	Scanf.sscanf s " %d" (fun x -> x)
+)
