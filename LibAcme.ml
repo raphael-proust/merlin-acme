@@ -52,7 +52,7 @@ let gfile () = env "%"
 let get_conn () = O9pc.connect (Printf.sprintf "%s/acme" ns)
 
 let get_fullio perm fname = O9pc.(
-	let conn = connect (Printf.sprintf "%s/acme" ns) in
+	let conn = get_conn () in
 	let fid = attach conn user "" in
 	let fid = walk conn fid true fname in
 	let io = fopen conn fid perm in
@@ -88,7 +88,7 @@ let merlin_winid =
 			let s = input_line i in
 			close_in i;
 			(* test wether the file exists *)
-			let conn = O9pc.connect (Printf.sprintf "%s/acme" ns) in
+			let conn = get_conn () in
 			let fid = O9pc.attach conn user "" in
 			let fid = O9pc.walk conn fid true s in
 			O9pc.clunk conn fid;
@@ -129,8 +129,7 @@ let get_content () =
 	let conn = get_conn () in
 	let wid = gwid () in
 	let b = Buffer.create 1024 in
-	let rootfid = O9pc.attach conn user "" in
-	let (fid, io) = O9pc.walk_open conn rootfid true (Printf.sprintf "%s/body" wid) O9pc.oREAD in
+	let (fid, io) = get_io conn O9pc.oREAD (Printf.sprintf "%s/body" wid) in
 	let rec fill offset =
 		let r = O9pc.read conn fid io (Int64.of_int offset) 1024l in
 		if r = "" then
