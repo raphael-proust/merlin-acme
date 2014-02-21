@@ -13,7 +13,7 @@ let () = match LibMerlin.tell_string ~state content with
 let () =
 	let fname = LibAcme.gfile () in
 	let a = LibAcme.get_addr (LibAcme.gwid ()) in
-	let (x,y) as position = LibAcme.from_offset content a in
+	let position = LibAcme.from_offset content a in
 	let types = LibMerlin.type_enclosing ~state ("", 0) position in
 	match types with
 	| None -> ()
