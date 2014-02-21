@@ -69,3 +69,10 @@ ulex                   1.1  lexer generator for Unicode and OCaml
 yojson               1.1.6  Yojson is an optimized parsing and printing library for the JS
 
 ```
+
+Does not work on
+
+```
+$ ocamlmerlin -version
+The Merlin toolkit version 1.5, for Ocaml 4.01.0
+```
