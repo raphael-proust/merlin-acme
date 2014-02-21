@@ -15,3 +15,23 @@ clean:V:
 
 purge:V: clean
 	rm -f $TRGTS
+
+
+#dependencies
+
+Cplt.cmo : LibMerlin.cmo LibAcme.cmo
+Cplt.cmx : LibMerlin.cmx LibAcme.cmx
+Errors.cmo : LibMerlin.cmo LibAcme.cmo
+Errors.cmx : LibMerlin.cmx LibAcme.cmx
+LibAcme.cmo : o9pc.cmo fcall.cmo
+LibAcme.cmx : o9pc.cmx fcall.cmx
+LibMerlin.cmo :
+LibMerlin.cmx :
+Locate.cmo : LibMerlin.cmo LibAcme.cmo
+Locate.cmx : LibMerlin.cmx LibAcme.cmx
+TypeOf.cmo : LibMerlin.cmo LibAcme.cmo
+TypeOf.cmx : LibMerlin.cmx LibAcme.cmx
+fcall.cmo :
+fcall.cmx :
+o9pc.cmo : fcall.cmo
+o9pc.cmx : fcall.cmx
