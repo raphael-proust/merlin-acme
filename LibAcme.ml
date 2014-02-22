@@ -186,6 +186,36 @@ let ident_under_point code offset =
   let (start, stop) = bounds_ident code offset in
   String.sub code start (stop - start+1)
 
+let strip_filename cwd absolute =
+	if String.length cwd > String.length absolute then
+		absolute
+	else
+		let fcs = ref 0 in (*furthest common slash*)
+		try
+		String.iteri (fun i c ->
+				if c <> cwd.[i] then
+					failwith ""
+				else if c = '/' then
+					fcs := i
+				else
+					()
+			)
+			cwd;
+		fcs := String.length cwd;
+		failwith ""
+		with Failure "" ->
+			String.sub absolute (!fcs + 1) (String.length absolute - !fcs -1)
+
+let print_range file content ((sl, sc as s), (el, ec as e)) =
+	let file = strip_filename (Sys.getenv "PWD") file in
+	if el=sl then
+		Printf.sprintf "%s:%d:%d-%d" file sl sc ec
+	else
+		let ec = sc + ((to_offset content e) - (to_offset content s)) in
+		Printf.sprintf "%s:%d:%d-%d" file sl sc ec
+
+
+
 (*TODO: unhack*)
 let get_addr winid = O9pc.(
 	(* open addr *)

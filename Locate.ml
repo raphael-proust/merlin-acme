@@ -1,22 +1,23 @@
 
 let state = LibMerlin.start "ocamlmerlin" []
-
 let () = match LibMerlin.load_project ~state (LibAcme.gfile ()) with
 	| None -> exit 2
 	| Some _ -> ()
-
 let () = match LibMerlin.reset ~state (LibAcme.gfile ()) with
 	| None -> exit 2
 	| Some () -> ()
 
-let () = match LibMerlin.tell_string ~state (LibAcme.get_content ()) with
+let content = LibAcme.get_content ()
+
+let () = match LibMerlin.tell_string ~state content with
 	| None -> exit 2
 	| Some _ -> ()
 
 let () =
-	let identifier = "tell_string" in (*TODO*)
-	let position = (6,26) in (*TODO*)
-	let place = LibMerlin.locate ~state identifier position in
+	let a = LibAcme.get_addr (LibAcme.gwid ()) in
+	let ident = LibAcme.ident_under_point content a in
+	let position = LibAcme.from_offset content a in
+	let place = LibMerlin.locate ~state ident position in
 	match place with
 	| None -> ()
 	| Some (fname, (c, l)) ->

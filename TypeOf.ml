@@ -1,5 +1,8 @@
 
 let state = LibMerlin.start "ocamlmerlin" []
+let () = match LibMerlin.load_project ~state (LibAcme.gfile ()) with
+	| None -> exit 2
+	| Some _ -> ()
 let () = match LibMerlin.reset ~state (LibAcme.gfile ()) with
 	| None -> exit 2
 	| Some () -> ()
@@ -19,10 +22,7 @@ let () =
 	| None -> ()
 	| Some l ->
 		LibAcme.erase_and_put
-			(List.map (fun (t, ((sl, sc), (el, ec))) ->
-				if el = sl then
-					Printf.sprintf "%s:%d:%d-%d: %s\n" fname sl sc ec t
-				else
-					"" (*TODO*)
-			)
-			l)
+			(List.map (fun (t, range) ->
+				Printf.sprintf "%s: %s\n" (LibAcme.print_range fname content range) t
+				)
+				l)
