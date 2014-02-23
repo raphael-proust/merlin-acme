@@ -1,45 +1,4 @@
 
-type addr (*TODO*) = string
-type command (*???*)
-type dirname = string
-
-type ctl_msg =
-	| AddrEqDot
-	| Clean
-	| Dirty
-	| Cleartag
-	| Del
-	| Delete
-	| DotEqAddr
-	| Dump of command
-	| Dumpdir of dirname
-	| Get
-	| Limit of addr
-	| Mark
-	| Name of string
-	| Nomark
-	| Put
-	| Show
-
-let string_of_ctl_msg = function
-	| AddrEqDot -> "addr=dot"
-	| Clean -> "clean"
-	| Dirty -> "dirty"
-	| Cleartag -> "cleartag"
-	| Del -> "del"
-	| Delete -> "delete"
-	| DotEqAddr -> "dot=addr"
-	| Dump cmd -> failwith "TODO"
-	| Dumpdir dirname -> "dumpdir " ^ dirname
-	| Get -> "get"
-	| Limit addr -> failwith "TODO"
-	| Mark -> "mark"
-	| Name name -> "name " ^ name
-	| Nomark -> "nomark"
-	| Put -> "put"
-	| Show -> "show"
-
-
 (* Global env *)
 let ns = Sys.getenv "NAMESPACE"
 let user = Sys.getenv "USER"
