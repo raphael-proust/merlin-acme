@@ -1,14 +1,15 @@
 
 TRGTS=M/Cplt M/TypeOf M/Locate M/Errors
 LIBS=LibAcme.cmo LibMerlin.cmo
+REQUIRES=unix,str,batteries,yojson,o9p,acme
 
 all:V: $TRGTS
 
 M/%: %.ml $LIBS
-	ocamlfind ocamlc -package unix,str,batteries,yojson,o9p -linkpkg -o $target $LIBS $stem.ml
+	ocamlfind ocamlc -package $REQUIRES -linkpkg -o $target $LIBS $stem.ml
 
 %.cmo: %.ml
-	ocamlfind ocamlc -package unix,str,batteries,yojson,o9p -c -o $target $prereq
+	ocamlfind ocamlc -package $REQUIRES -c -o $target $prereq
 
 clean:V:
 	rm -f *.cm? *.o *.a
