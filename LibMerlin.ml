@@ -89,7 +89,9 @@ let type_enclosing ~state (string, offset) pos =
 let locate ~state identifier position = 
   send_command_map ~state "locate" [`String identifier; `String "at"; json_of_pos position] 
     (function
-    | `Assoc l -> (string_of_json (List.assoc "file" l), pos_of_json (List.assoc "pos" l))
+    | `Assoc l ->
+        ((try Some (string_of_json (List.assoc "file" l)) with Not_found -> None),
+        pos_of_json (List.assoc "pos" l))
     | _ -> assert false)
 
 let errors ~state = 

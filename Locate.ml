@@ -20,6 +20,8 @@ let () =
 	match LibMerlin.locate ~state ident position with
 	| None ->
 		LibAcme.erase_and_put []
-	| Some (fname, (c, l)) ->
+	| Some (Some fname, (c, l)) ->
+		LibAcme.erase_and_put [Printf.sprintf "%s:%d:%d\n" fname c l]
+	| Some (None, (c, l)) ->
 		LibAcme.erase_and_put [Printf.sprintf "%s:%d:%d\n" fname c l]
 
