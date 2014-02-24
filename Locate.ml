@@ -1,24 +1,25 @@
 
 let state = LibMerlin.start "ocamlmerlin" []
-
-let () = match LibMerlin.load_project ~state (LibAcme.gfile ()) with
+let fname = LibAcme.gfile ()
+let () = match LibMerlin.load_project ~state fname with
 	| None -> exit 2
 	| Some _ -> ()
-
-let () = match LibMerlin.reset ~state (LibAcme.gfile ()) with
+let () = match LibMerlin.reset ~state fname with
 	| None -> exit 2
 	| Some () -> ()
-
-let () = match LibMerlin.tell_string ~state (LibAcme.get_content ()) with
+let content = LibAcme.get_content ()
+let () = match LibMerlin.tell_string ~state content with
 	| None -> exit 2
 	| Some _ -> ()
 
+let addr = LibAcme.get_addr (Acme.Win.current ())
+let ident = LibAcme.ident_under_point content addr
+let position = LibAcme.from_offset content addr
+
 let () =
-	let identifier = "tell_string" in (*TODO*)
-	let position = (6,26) in (*TODO*)
-	let place = LibMerlin.locate ~state identifier position in
-	match place with
-	| None -> ()
+	match LibMerlin.locate ~state ident position with
+	| None ->
+		LibAcme.erase_and_put []
 	| Some (fname, (c, l)) ->
 		LibAcme.erase_and_put [Printf.sprintf "%s:%d:%d\n" fname c l]
 

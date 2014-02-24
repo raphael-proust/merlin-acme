@@ -48,10 +48,11 @@ let send_command_map ~state command args cb =
   match send_command state command args with
   | Return a -> (try Some (cb a) with _ -> None)
   | Error s -> prerr_endline s; None
-let load_project ~state filename = 
-  send_command_map ~state "project" [`String "find"; `String filename] 
-    (function 
-    | `List l -> List.map string_of_json l | _ -> assert false)
+
+let load_project ~state filename =
+  send_command_map ~state "project" [`String "find"; `String filename]
+    (function
+    | `Assoc ["result", `List l] -> List.map string_of_json l | _ -> assert false)
 
 let reset ~state filename = 
   send_command_map ~state "reset" [`String "name"; `String filename] (fun _ -> ())
