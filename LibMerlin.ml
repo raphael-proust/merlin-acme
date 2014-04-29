@@ -34,10 +34,8 @@ let range_of_json = function
 
 let send_command (input, output) command args = 
   Printf.fprintf output "%s\n" (Json.to_string (`List (`String command :: args)));
-  Printf.fprintf stdout "%s\n" (Json.to_string (`List (`String command :: args)));
   flush output;
   let s = IO.read_line input in
-  print_endline s;
   match Json.from_string s with
   | `List ([`String "return"; data]) -> Return data
   | `List ([`String "error"; `String s]) -> Error s

@@ -1,7 +1,7 @@
-open Acme (*Gives Addr, Ctl, and Win*)
+open Acme (*Gives Env, Addr, Ctl, and Win*)
 
 let reuse = ()
-let ns = Sys.getenv "NAMESPACE"
+let ns = Env.namespace
 let user = Sys.getenv "USER"
 
 (* window specific env *)
@@ -151,8 +151,6 @@ let print_range file content ((sl, sc as s), (el, ec as e)) =
 		Printf.sprintf "%s:%d:%d-%d" file sl sc ec
 
 
-
-(*TODO: unhack*)
 let get_addr winid = O9pc.(
 	(* open addr *)
 	let conn_addr = get_conn () in
